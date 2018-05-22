@@ -3,28 +3,30 @@ var mainState = {
         game.load.image('mario', 'assets/mario.png');
         game.load.image('wall', 'assets/wall.png');
         game.load.audio('jump', 'assets/jump.wav'); 
+        game.load.audio('fail', 'assets/fail.mp3'); 
     },
 
     create: function () {
-        // Change the background color of the game to blue
+        // Change the background color of the game
         game.stage.backgroundColor = '#b0b7c1';
 
         // Set the physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
         
         this.jumpSound = game.add.audio('jump'); 
+        this.failSound = game.add.audio('fail'); 
 
-        // Display the bird at the position x=100 and y=245
+        // Display the nario at the position x=100 and y=245
         this.mario = game.add.sprite(100, 245, 'mario');
 
-        // Create an empty group
+        // Create an empty group of walls
         this.walls = game.add.group();
 
-        // Add physics to the bird
+        // Add physics to the mario
         // Needed for: movements, gravity, collisions, etc.
         game.physics.arcade.enable(this.mario);
 
-        // Add gravity to the bird to make it fall
+        // Add gravity to the mario to make it fall
         this.mario.body.gravity.y = 1050;
 
         // Call the 'jump' function when the spacekey is hit
@@ -45,16 +47,16 @@ var mainState = {
         // Create a wall at the position x and y
         var wall = game.add.sprite(x, y, 'wall');
 
-        // Add the pipe to our previously created group
+        // Add the wall to our previously created group
         this.walls.add(wall);
 
-        // Enable physics on the pipe 
+        // Enable physics on the wall 
         game.physics.arcade.enable(wall);
 
-        // Add velocity to the pipe to make it move left
+        // Add velocity to the wall to make it move left
         wall.body.velocity.x = -200;
 
-        // Automatically kill the pipe when it's no longer visible 
+        // Automatically kill the wall when it's no longer visible 
         wall.checkWorldBounds = true;
         wall.outOfBoundsKill = true;
     },
@@ -74,32 +76,34 @@ var mainState = {
         this.labelScore.text = this.score;
     },
 
-    hitPipe: function () {
-        // If the bird has already hit a pipe, do nothing
-        // It means the bird is already falling off the screen
+    hitWall: function () {
+        // If the bird has already hit a wall, do nothing
+        // It means the mario is already falling off the screen
         if (this.mario.alive == false)
             return;
 
-        // Set the alive property of the bird to false
+        // Set the alive property of the mario to false
         this.mario.alive = false;
 
-        // Prevent new pipes from appearing
+        // Prevent new mario from appearing
         game.time.events.remove(this.timer);
 
-        // Go through all the pipes, and stop their movement
+        // Go through all the mario, and stop their movement
         this.walls.forEach(function (p) {
             p.body.velocity.x = 0;
         }, this);
+        
+        this.failSound.play(); 
     },
 
     update: function () {
-        // If the bird is out of the screen (too high or too low)
+        // If the mario is out of the screen (too high or too low)
         // Call the 'restartGame' function
         if (this.mario.y < 0 || this.mario.y > 490)
             this.restartGame();
 
         game.physics.arcade.overlap(
-                this.mario, this.walls, this.hitPipe, null, this);
+                this.mario, this.walls, this.hitWall, null, this);
 
         if (this.mario.angle < 20)
             this.mario.angle += 1;
@@ -110,10 +114,10 @@ var mainState = {
         if (this.mario.alive == false)
             return;
         
-        // Add a vertical velocity to the bird
+        // Add a vertical velocity to the mario
         this.mario.body.velocity.y = -350;
 
-        // Create an animation on the bird
+        // Create an animation on the mario
         var animation = game.add.tween(this.mario);
 
         // Change the angle of the mario to -20° in 100 milliseconds
@@ -137,6 +141,6 @@ var game = new Phaser.Game(400, 490);
 
 // Add the 'mainState' and call it 'main'
 game.state.add('main', mainState);
-
+ 
 // Start the state to actually start the game
 game.state.start('main');
